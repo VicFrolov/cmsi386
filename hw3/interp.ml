@@ -192,9 +192,17 @@ let tieTheKnot nm v =
 *)
 let rec evalExpr (e:moexpr) (env:moenv) : movalue =
   match e with
-    (* an integer constant evaluates to itself *)
-    IntConst(i) -> IntVal(i)
-  | _ -> raise (ImplementMe "evalExpr")
+  | IntConst(i) -> IntVal(i)
+  | BoolConst(boo) -> BoolVal(boo)
+  | Nil -> NilVal          
+  | BinOp(value1, operation, value2) -> (match (evalExpr value1 env, operation, evalExpr value2 env) with 
+                                            | (IntVal(i), Plus, IntVal(j)) -> IntVal(i + j)
+                                            | (IntVal(i), Minus, IntVal(j)) -> IntVal(i - j)
+                                            | (IntVal(i), Times, IntVal(j)) -> IntVal(i * j)
+                                            | (IntVal(i), Eq, IntVal(j)) -> BoolVal(i = j)
+                                            | (IntVal(i), Gt, IntVal(j)) -> BoolVal(i > j)
+                                            |  _ -> raise (DynamicTypeError "Error"))
+  | _ -> raise (DynamicTypeError "you dun' goofed... Please never use ocaml again!")
 
 (* evalExprTest defines a test case for the evalExpr function.
    inputs: 
@@ -211,9 +219,12 @@ let evalExprTest (nm,expr,expected) =
  *)
 let evalExprTests = [
     ("IntConst",    IntConst 5,                              Value (IntVal 5))
+  ; ("Nilval",      Nil,                                     Value (NilVal))
   ; ("BoolConst",   BoolConst true,                          Value (BoolVal true))
   ; ("Plus",        BinOp(IntConst 1, Plus, IntConst 1),     Value (IntVal 2))
-  ; ("BadPlus",     BinOp(BoolConst true, Plus, IntConst 1), Exception (DynamicTypeError "You should change this to be a more informative message"))
+  ; ("BadPlus",     BinOp(BoolConst true, Plus, IntConst 1), Exception (DynamicTypeError "Error"))
+  ; ("Minus",        BinOp(IntConst 1, Minus, IntConst 1),     Value (IntVal 0))
+  ; ("BadMinus",     BinOp(BoolConst true, Minus, IntConst 1), Exception (DynamicTypeError "Error"))  
   ; ("Let",         Let(VarPat "x", IntConst 1, Var "x"),    Value (IntVal 1))
   ; ("Fun",         FunCall(
 			Fun(VarPat "x", Var "x"),
