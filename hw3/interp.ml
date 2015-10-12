@@ -2,9 +2,9 @@
 
    UID: 978687700
 
-   Others With Whom I Discussed Things: 
+   Others With Whom I Discussed Things: Trixie
 
-   Other Resources I Consulted:
+   Other Resources I Consulted: Matthew Brown, aka "OCAML God"
    
 *)
 
@@ -195,6 +195,8 @@ let rec evalExpr (e:moexpr) (env:moenv) : movalue =
   | IntConst(i) -> IntVal(i)
   | BoolConst(boo) -> BoolVal(boo)
   | Nil -> NilVal          
+  | Var(v) -> (try Env.lookup v env with
+                Env.NotBound -> raise (DynamicTypeError "not found"))
   | BinOp(value1, operation, value2) -> (match (evalExpr value1 env, operation, evalExpr value2 env) with 
                                             | (IntVal(i), Plus, IntVal(j)) -> IntVal(i + j)
                                             | (IntVal(i), Minus, IntVal(j)) -> IntVal(i - j)
@@ -202,6 +204,13 @@ let rec evalExpr (e:moexpr) (env:moenv) : movalue =
                                             | (IntVal(i), Eq, IntVal(j)) -> BoolVal(i = j)
                                             | (IntVal(i), Gt, IntVal(j)) -> BoolVal(i > j)
                                             |  _ -> raise (DynamicTypeError "Error"))
+  | Negate(e) -> (match (evalExpr e env) with
+                     | IntVal(i) -> IntVal(-i)
+                     | _ -> raise (DynamicTypeError "Not an int"))
+  | If(x,y,z) -> (match (evalExpr x env) with
+                  | BoolVal(boo) -> if boo then (evalExpr y env) else (evalExpr z env)
+                  | _ -> raise (DynamicTypeError "Not a boolean expression"))
+  | Fun(p,e) -> FunVal(None, p, e, env)
   | _ -> raise (DynamicTypeError "you dun' goofed... Please never use ocaml again!")
 
 (* evalExprTest defines a test case for the evalExpr function.
