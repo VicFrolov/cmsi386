@@ -203,6 +203,7 @@ let rec evalExpr (e:moexpr) (env:moenv) : movalue =
                                             | (IntVal(i), Times, IntVal(j)) -> IntVal(i * j)
                                             | (IntVal(i), Eq, IntVal(j)) -> BoolVal(i = j)
                                             | (IntVal(i), Gt, IntVal(j)) -> BoolVal(i > j)
+                                            | (i, Cons, j) -> ConsVal(i,j)
                                             |  _ -> raise (DynamicTypeError "Error"))
   | Negate(e) -> (match (evalExpr e env) with
                      | IntVal(i) -> IntVal(-i)
