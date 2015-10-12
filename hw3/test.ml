@@ -22,6 +22,7 @@ let replTests = [
     ^ "  0 -> 1 "
     ^ "| _ -> n * fact (n-1)",  "val fact = <fun>")
   ; ("fact 5",                  "val - = 120")
+
   ]
 
 (* The Test Harness

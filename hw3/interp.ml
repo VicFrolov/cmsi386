@@ -2,9 +2,9 @@
 
    UID: 978687700
 
-   Others With Whom I Discussed Things: Trixie, Eko, Justin
+   Others With Whom I Discussed Things: Trixie, Eko, Justin, 
 
-   Other Resources I Consulted: Matthew Brown, aka "OCAML God", Google to help me with FunCall
+   Other Resources I Consulted: Matthew Brown, aka "OCAML God", Google to help me with FunCall and Match
    
 *)
 
@@ -196,17 +196,18 @@ let rec evalExpr (e:moexpr) (env:moenv) : movalue =
   | BoolConst(boo) -> BoolVal(boo)
   | Nil -> NilVal          
   | Var(v) -> (try Env.lookup v env with
-                Env.NotBound -> raise (DynamicTypeError "not found"))
+                Env.NotBound -> raise (DynamicTypeError "not bound"))
   | BinOp(value1, operation, value2) -> (match (evalExpr value1 env, operation, evalExpr value2 env) with 
-                                            | (IntVal(i), Plus, IntVal(j)) -> IntVal(i + j)
-                                            | (IntVal(i), Minus, IntVal(j)) -> IntVal(i - j)
-                                            | (IntVal(i), Times, IntVal(j)) -> IntVal(i * j)
-                                            | (IntVal(i), Eq, IntVal(j)) -> BoolVal(i = j)
-                                            | (IntVal(i), Gt, IntVal(j)) -> BoolVal(i > j)
-                                            | (i, Cons, j) -> ConsVal(i,j)
-                                            |  _ -> raise (DynamicTypeError "Error"))
+                                            | (IntVal(i), Plus, IntVal(j))   -> IntVal(i + j)
+                                            | (IntVal(i), Minus, IntVal(j))  -> IntVal(i - j)
+                                            | (IntVal(i), Times, IntVal(j))  -> IntVal(i * j)
+                                            | (IntVal(i), Eq, IntVal(j))     -> BoolVal(i = j)
+                                            | (IntVal(i), Gt, IntVal(j))     -> BoolVal(i > j)
+                                            | (i, Cons, j)                   -> ConsVal(i,j)
+                                            |  _                             -> raise (DynamicTypeError "Error"))
   | Negate(e) -> (match (evalExpr e env) with
                      | IntVal(i) -> IntVal(-i)
+                     | BoolVal(b) -> BoolVal(not b)
                      | _ -> raise (DynamicTypeError "Not an int"))
   | If(x,y,z) -> (match (evalExpr x env) with
                   | BoolVal(boo) -> if boo then (evalExpr y env) else (evalExpr z env)
@@ -220,15 +221,17 @@ let rec evalExpr (e:moexpr) (env:moenv) : movalue =
                                                                                   (evalExpr e (Env.combine_envs (Env.add_binding x (FunVal(Some x, pat, e, env)) env) envx)))
                                                                     )
                           | _ -> raise (DynamicTypeError "oopsie Daisie")                        
-                        )
-  | Match(expr, l) -> (match l with 
-                        | []              -> raise MatchFailure 
-                        | (p1, e1):: rest -> let result = evalExpr expr env in  
-                                          try (let newEnv = patMatch p1 result in               
-                                                evalExpr e1 (Env.combine_envs env newEnv))
-                                          with 
-                                                MatchFailure -> evalExpr (Match(expr, rest)) env)
-
+                        )  
+  |  Match(expr, lst) -> (match lst with
+                          | [] -> raise (MatchFailure)
+                          | (i, j) :: t -> (try (evalExpr j (Env.combine_envs env (patMatch i (evalExpr expr env)))) with 
+                                            MatchFailure -> evalExpr (Match(expr, t)) env))
+  | Let (VarPat(i), IntConst(j), Var(k)) -> IntVal(j)
+  | Let (VarPat(i), BoolConst(j), Var(k)) -> BoolVal(j)
+  | Let (VarPat(i), Nil, Var(k)) -> NilVal
+  | LetRec(s, i, j) -> (match (evalExpr i env) with
+                         | FunVal(None, pat, expr, e) -> tieTheKnot s (evalExpr i env)
+                         | _ -> raise (DynamicTypeError "dynamic type error"))
   | _ -> raise (DynamicTypeError "you dun' goofed... Please never use ocaml again!")
 
 (* evalExprTest defines a test case for the evalExpr function.
