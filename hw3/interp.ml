@@ -2,9 +2,9 @@
 
    UID: 978687700
 
-   Others With Whom I Discussed Things: Trixie
+   Others With Whom I Discussed Things: Trixie, Eko, Justin
 
-   Other Resources I Consulted: Matthew Brown, aka "OCAML God"
+   Other Resources I Consulted: Matthew Brown, aka "OCAML God", Google to help me with FunCall
    
 *)
 
@@ -212,6 +212,23 @@ let rec evalExpr (e:moexpr) (env:moenv) : movalue =
                   | BoolVal(boo) -> if boo then (evalExpr y env) else (evalExpr z env)
                   | _ -> raise (DynamicTypeError "Not a boolean expression"))
   | Fun(p,e) -> FunVal(None, p, e, env)
+  | FunCall(e1, e2) -> (match (evalExpr e1 env, evalExpr e2 env) with
+                          | (FunVal(soption, pat, e, env), arg) -> (match soption with 
+                                                                    | None    -> (let envx = (try (patMatch pat arg) with MatchFailure -> raise MatchFailure) in 
+                                                                                  (evalExpr e  (Env.combine_envs env envx)) )
+                                                                    | Some(x) -> (let envx = (try (patMatch pat arg) with MatchFailure -> raise MatchFailure) in 
+                                                                                  (evalExpr e (Env.combine_envs (Env.add_binding x (FunVal(Some x, pat, e, env)) env) envx)))
+                                                                    )
+                          | _ -> raise (DynamicTypeError "oopsie Daisie")                        
+                        )
+  | Match(expr, l) -> (match l with 
+                        | []              -> raise MatchFailure 
+                        | (p1, e1):: rest -> let result = evalExpr expr env in  
+                                          try (let newEnv = patMatch p1 result in               
+                                                evalExpr e1 (Env.combine_envs env newEnv))
+                                          with 
+                                                MatchFailure -> evalExpr (Match(expr, rest)) env)
+
   | _ -> raise (DynamicTypeError "you dun' goofed... Please never use ocaml again!")
 
 (* evalExprTest defines a test case for the evalExpr function.
