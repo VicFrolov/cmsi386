@@ -231,9 +231,9 @@ def runQuery(f, query):
     print(','.join(query.output_headers))
 
     for ln in f:
-        x = query.process_row(rowStringToDict(query.input_headers, ln))
+        x = query.process_row(rowStringToDict(query.input_headers, ln.strip()))
         if x != None:
-            print(rowDictToString(query.output_headers, x)[:-1])
+            print(rowDictToString(query.output_headers, x))
 
     # did the query do any aggregation?
     if len(query.aggregate_headers) > 0:
@@ -446,7 +446,7 @@ class Select:
 
     Example: 
 
-    $ python3 hw4.py player_career_short.csv -Select firstname lastname gp pts
+    $ python3 hw4.py player_career_short.csv -Select firstname lastname gp pts -rename lp games played
     firstname,lastname,gp,pts
     Alaa,Abdelnaby,256,1465
     Kareem,Abdul-jabbar,1560,38387
@@ -460,13 +460,18 @@ class Select:
     """
 
     def __init__(self, in_headers, args):
-        raise Exception("Implement Select constructor")
+        self.input_headers = in_headers
+        self.aggregate_headers = []
+        self.output_headers = []
+
+        while args and not args[0].startswith("-"):
+            self.output_headers.append(args.pop(0))
 
     def process_row(self, row):
-        raise Exception("Implement Select.process_row")
+        return row
 
     def get_aggregate(self):
-        raise Exception("Implement Select.get_aggregate")
+        return {}
 
 #################### Test it! ####################
 
