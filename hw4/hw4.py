@@ -1061,7 +1061,11 @@ def buildQuery(in_headers, args):
     query = Identity(in_headers,args)
 
     while(len(args) > 0):
-        raise Exception("Implement buildQuery")
+        first = args.pop(0)
+        if first[0] == '-':
+            queryClass = first.replace("-", "")
+            compose = queries[queryClass]
+            query = ComposeQueries(query, compose(query.output_headers, args))
 
     return query
 
