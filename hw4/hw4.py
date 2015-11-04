@@ -574,26 +574,7 @@ def runFilter1():
     # run it.
     runQuery(f, query)
 
-
-# def runFilter2():
-#     f = open('player_career_short.csv')
-
-#     # get the input headers
-#     in_headers = f.readline().strip().split(',')
-
-#     # build the query
-#     args = ['firstname','lastname', 'gp', 'pts', '-Stop']
-#     query = Select(in_headers, args)
-
-#     # should have stopped at the flag
-#     assert(args == ['-Stop'])  
-
-#     # run it.
-#     runQuery(f, query)
-
-
-
-# write your own test!
+#################################################
 
 class Update:
     """ 
@@ -622,15 +603,41 @@ class Update:
     """
     
     def __init__(self, in_headers, args):
-        raise Exception("Implement Update constructor")
+        self.aggregate_headers = []
+        self.input_headers = in_headers
+        self.output_headers = in_headers
+
+        self.column_name = args.pop(0)
+        self.pythonExpr = args.pop(0)
+
+        if not(self.column_name in self.input_headers):
+            raise Exception('You must construct additional pylons...and column not found')        
 
     def process_row(self,row):
-        raise Exception("Implement Update.process_row")
+        row[self.column_name] = eval(self.pythonExpr, row)
+        return row
 
     def get_aggregate(self):
-        raise Exception("Implement Update.get_aggregate")
+        return {}
 
 #################### Test it! ####################    
+
+
+def runUpdate1():
+    f = open('player_career_short.csv')
+
+    # get the input headers
+    in_headers = f.readline().strip().split(',')
+
+    # build the query
+    args = ['firstname', 'firstname.lower()']
+    query = Update(in_headers, args)
+
+    # should have consumed all args!
+    assert(args == [])
+
+    # run it.
+    runQuery(f, query)
 
 # write your own test!
 
