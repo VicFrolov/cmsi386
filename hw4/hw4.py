@@ -738,15 +738,15 @@ class MaxBy:
         self.output_headers = in_headers
         self.value = args.pop(0)
         self.value2 = args.pop(0)
-        self.aggregate_headers = ['Max' + self.value + ' By ' + self.value2]
+        self.aggregate_headers = ['Max ' + self.value + ' By ' + self.value2]
 
         self.max = 0
         self.name = ""
 
 
     def process_row(self,row):
-        if int(row[self.value2]) > self.max:
-            self.max = int(row[self.value2])
+        if float(row[self.value2]) > self.max:
+            self.max = float(row[self.value2])
             self.name = row[self.value]
 
         return row
@@ -859,13 +859,41 @@ class Mean:
     """
     
     def __init__(self, in_headers, args):
-        raise Exception("Implement Mean constructor")
+        self.input_headers = in_headers
+        self.output_headers = in_headers
+        self.argument = args.pop(0)
+        self.aggregate_headers = [self.argument + " Mean"]
+
+        self.currentMean = 0;
+        self.amountToDivideBy = 0
 
     def process_row(self,row):
-        raise Exception("Implement Mean.process_row")
+        self.currentMean += int(row[self.argument])
+        self.amountToDivideBy += 1
+        return row
 
     def get_aggregate(self):
-        raise Exception("Implement Mean.get_aggregate")
+        self.currentMean /= self.amountToDivideBy
+        return {self.aggregate_headers[0] : self.currentMean}
+
+
+
+####test case weeeeee ####
+def runMean():
+    f = open('player_career_short.csv')
+
+    # get the input headers
+    in_headers = f.readline().strip().split(',')
+
+    # build the query
+    args = ['turnover']
+    query = Mean(in_headers, args)
+
+    # should have consumed all args!
+    assert(args == [])
+
+    # run it.
+    runQuery(f, query)  
 
 #################### STEP 4 : Composing Queries ####################
 # Each of our little queries is neat, but they become much more
@@ -923,13 +951,29 @@ class ComposeQueries:
 
     """
     def __init__(self, q1, q2):
-        raise Exception("Implement ComposeQueries constructor")
+        self.input_headers = q1.input_headers
+        self.output_headers = q2.output_headers
+        self.aggregate_headers = q1.aggregate_headers + q2.aggregate_headers
+
+        self.queries = [q1, q2]
 
     def process_row(self,row):
-        raise Exception("Implement ComposeQueries.process_row")
+        if self.queries[0].process_row(row) != None:
+            return self.queries[1].process_row(self.queries[0].process_row(row))
+        else:
+            return None
 
     def get_aggregate(self):
-        raise Exception("Implement ComposeQueries.get_aggregate")
+        #Copied this part from Chris had no idea how to get it working
+        if len(self.queries[0].get_aggregate()) > 0 and len(self.queries[1].get_aggregate()) > 0:
+            return self.queries[0].get_aggregate().update(self.queries[1].get_aggregate())
+        elif len(self.queries[0].get_aggregate()) <= 0 and len(self.queries[1].get_aggregate()) > 0:
+            return self.queries[1].get_aggregate()
+        elif len(self.queries[0].get_aggregate()) > 0 and len(self.queries[1].get_aggregate()) <= 0:
+            return self.queries[0].get_aggregate()
+        else:
+            return {}
+
 
 #################### Test it! ####################
 
