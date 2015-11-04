@@ -1,4 +1,4 @@
-# Name:
+# Name: Victor Frolov
 #
 # UID:
 #
@@ -59,42 +59,21 @@ import sys
 ################################################
 
 def rowStringToDict(headers, ln):
-    """
-    Convert a line of data a CSV to a dictionary
-    mapping the column header to each column cell.
-    The keys and values of the dictionary should all be strings.
-
-    Example:
-
-    heads = ['Name','Age','Hair']
-    ln    = 'Steve,25,Blonde'
-    row   = rowStringToDict(heads, ln)
-
-    row should be:
-      {'Name' : 'Steve', 'Age' : '25', 'Hair' : 'Blonde'}
-
-    Tip: use the split method on strings. See help(str.split)
-    """
-    raise "Implement rowStringToDict!"
+    valuesList = ln.split(",")
+    dictionary = {}
+    for x in range (0, len(valuesList)):
+        dictionary[headers[x]] = valuesList[x]
+    return dictionary
 
 assert(rowStringToDict(['Name','Age','Hair'], 'Steve,25,Blonde') == {'Name' : 'Steve', 'Age' : '25', 'Hair' : 'Blonde'})
 
 def rowDictToString(headers, dict):
-    """
-    Converts a dictionary representation of a row back to string in CSV format.
-    The headers argument determines the order of the values.
-
-    Example:
-
-    heads = ['Name','Age',PhoneNumber']
-    row   = {'Name' : 'Steve', 'Age' : '25', 'PhoneNumber' : '3101345264'}
-    ln    = rowDictToString(heads, row)
-
-    ln should be: 'Steve,25,3101345264'
-
-    Tip: use the join method on strings. See help(str.join)
-    """
-    raise "Implement rowDictToString!"
+    lnArray  = []
+    lnString = ""
+    for x in headers:
+        lnArray.append(str(dict[x]))
+    lnString = ",".join(lnArray)
+    return lnString
 
 assert(rowDictToString(['Name','Age','Hair'], {'Name' : 'Steve', 'Age' : '25', 'Hair' : 'Blonde'}) == 'Steve,25,Blonde')
 
@@ -247,29 +226,20 @@ def runQuery(f, query):
       Does the query even have an aggregate table? I.e. is aggregate_headers non-empty?
       If yes, print a blank line, then the aggregate headers, then the row of aggregate values.
     """
-
-    # print the query's output headers.
-    # Tip: use the join method on strings.
-    #   try: ','.join(['A','B','C'])
-    #   try: ' '.join(['A','B','C'])
-    #   see: help(str.join)
-
-    raise Exception("runQuery needs to print the query's output headers")
-
-    # process each input line
-    # Pseudocode:
-    # for each line in the file f:
-    #   convert the line from CSV format to a dictionary. use the query's input headers.
-    #   tell the query to process the row.
-    #   if query returns an output row, print it in CSV-format.
-    #   if the query returns None, don't print anything.
     
-    raise Exception("runQuery needs to process each line")
+
+    print(','.join(query.output_headers))
+
+    for ln in f:
+        x = query.process_row(rowStringToDict(query.input_headers, ln))
+        if x != None:
+            print(rowDictToString(query.output_headers, x)[:-1])
 
     # did the query do any aggregation?
     if len(query.aggregate_headers) > 0:
-        # yes. print the aggregate table.
-        raise Exception("runQuery needs to output the aggregate table")
+        print("")
+        print(",".join(query.aggregate_headers))
+        print(rowDictToString(query.aggregate_headers, query.get_aggregate()))
 
 
 #################### Test it! ####################
