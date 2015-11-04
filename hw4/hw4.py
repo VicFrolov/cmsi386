@@ -319,18 +319,26 @@ class Rename:
     """
     
     def __init__(self, in_headers, args):
-        raise Exception("Implement Rename constructor")
+        self.input_headers = in_headers
+        self.oldName = args.pop(0)
+        self.newName = args.pop(0)
+
+        for i in in_headers:
+            if i == self.oldName:
+                in_headers[in_headers.index(i)] = self.newName
+        self.output_headers = in_headers                
+        self.aggregate_headers = []
 
     def process_row(self,row):
-        raise Exception("Implement Rename.process_row")
-
+        return row
     def get_aggregate(self):
-        raise Exception("Implement Rename.get_aggregate")
+        return {}
 
 
 #################### Test it! ####################
 
 def runRename():
+
     f = open('player_career_short.csv')
 
     # get the input headers
