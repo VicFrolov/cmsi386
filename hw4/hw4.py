@@ -542,15 +542,56 @@ class Filter:
     """
 
     def __init__(self, in_headers, args):
-        raise Exception("Implement Filter constructor")
+        self.input_headers = in_headers
+        self.consumes = args.pop(0)
+        self.output_headers = in_headers
+        self.aggregate_headers = []
+
 
     def process_row(self,row):
-        raise Exception("Implement Filter.process_row")
+        if eval(self.consumes, row):
+            return row
 
     def get_aggregate(self):
-        raise Exception("Implement Filter.get_aggregate")
+        return {}
 
 #################### Test it! ####################    
+
+
+def runFilter1():
+    f = open('player_career_short.csv')
+
+    # get the input headers
+    in_headers = f.readline().strip().split(',')
+
+    # build the query
+    args = ['int(gp) > 500']
+    query = Filter(in_headers, args)
+
+    # should have consumed all args!
+    assert(args == [])
+
+    # run it.
+    runQuery(f, query)
+
+
+# def runFilter2():
+#     f = open('player_career_short.csv')
+
+#     # get the input headers
+#     in_headers = f.readline().strip().split(',')
+
+#     # build the query
+#     args = ['firstname','lastname', 'gp', 'pts', '-Stop']
+#     query = Select(in_headers, args)
+
+#     # should have stopped at the flag
+#     assert(args == ['-Stop'])  
+
+#     # run it.
+#     runQuery(f, query)
+
+
 
 # write your own test!
 
