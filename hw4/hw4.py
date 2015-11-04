@@ -387,13 +387,30 @@ class Swap:
     """
     
     def __init__(self, in_headers, args):
-        raise Exception("Implement Swap constructor")
+        self.input_headers = in_headers
+        self.aggregate_headers = []
+        self.swap1 = args.pop(0)
+        self.swap2 = args.pop(0)
+        self.index1 = -1
+        self.index2 = -1
+
+        for i in in_headers:
+            if i == self.swap1:
+                self.index1 = in_headers.index(i)
+            if i == self.swap2:
+                self.index2 = in_headers.index(i)
+
+        self.input_headers[self.index1], self.input_headers[self.index2] = self.input_headers[self.index2], self.input_headers[self.index1]
+        self.output_headers = self.input_headers
+
+
 
     def process_row(self,row):
-        raise Exception("Implement Swap.process_row")
+        row[self.swap1], row[self.swap2] = row[self.swap2], row[self.swap1]
+        return row
 
     def get_aggregate(self):
-        raise Exception("Implement Swap.get_aggregate")
+        return {}
 
 #################### Test it! ####################
 
