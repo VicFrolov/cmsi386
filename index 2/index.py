@@ -53,10 +53,24 @@ def words(args):
 def occurrences(args):
     args = args.pop(0).lower()
     for x in index[args]:
-      print('(' + repr(index[args].index(x)) + ') File ' + x[0] + ", " + repr(x[1]) + ", " + repr(x[2]))
+        print('(' + repr(index[args].index(x)) + ') File ' + x[0] + ", " + repr(x[1]) + ", " + repr(x[2]))
     
 def context(args):
-  raise Exception("Implement me: context")
+    keyword = args.pop(0).lower()
+    indexValue = int(args.pop(0))
+    linetoRead = index[keyword][indexValue][1]
+    underlineStart = index[keyword][indexValue][2]
+    underline = ""
+
+    for i in range(0, underlineStart):
+        underline += " "
+    for i in range(0, len(keyword)):
+        underline += "^"
+
+    File = open(index[keyword][indexValue][0])
+    print(File.readlines()[linetoRead].rstrip())
+    print(underline)
+
 
 def output(args):
   raise Exception("Implement me: output")

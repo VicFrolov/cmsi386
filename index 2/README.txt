@@ -15,7 +15,7 @@ Interactive commands:
     -- it easy to refer to it in the "context" command. Each occurrence should
     -- be listed on its own line, indented two spaces.
 
-  context <word> <n>t    -- Print the line of the nth occurrence of a word, with the word
+  context <word> <n> -- Print the line of the nth occurrence of a word, with the word
     -- underlined. Underline it by writing another line below, which is blank
     -- except for a ^ under each character of the word. See below for an
     -- example.
