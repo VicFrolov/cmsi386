@@ -26,9 +26,8 @@ blabla = "asdf asdfl asfasdfasdfasdflol"
 def build_index():
     while args:
         fname = args.pop(0)
-
         f = open(fname)
-        line_num = 1
+        line_num = 0
 
         for ln in f:
             currentLine = ln.lower()
@@ -43,8 +42,6 @@ def build_index():
 
 build_index()
 
-print(index)
-print(len(index))
 
 def words(args):
     args = args.pop(0).lower()
@@ -55,10 +52,9 @@ def words(args):
 
 def occurrences(args):
     args = args.pop(0).lower()
-    print(args)
+    for x in index[args]:
+      print('(' + repr(index[args].index(x)) + ') File ' + x[0] + ", " + repr(x[1]) + ", " + repr(x[2]))
     
-
-
 def context(args):
   raise Exception("Implement me: context")
 
