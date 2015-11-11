@@ -51,9 +51,9 @@ def words(args):
 
 
 def occurrences(args):
-    args = args.pop(0).lower()
-    for x in index[args]:
-        print('(' + repr(index[args].index(x)) + ') File ' + x[0] + ", " + repr(x[1]) + ", " + repr(x[2]))
+    searchWord = args.pop(0)
+    for x in index[searchWord]:
+        print('  (' + repr(index[searchWord].index(x)) + ') File ' + x[0] + ", " + repr(x[1]) + ", " + repr(x[2]))
     
 def context(args):
     keyword = args.pop(0).lower()
@@ -73,8 +73,10 @@ def context(args):
 
 
 def output(args):
-  raise Exception("Implement me: output")
-    
+    for x in sorted(index):
+        print(x)
+        occurrences([x])
+
 cmds = {
   'words' : words,
   'occurrences' : occurrences,
