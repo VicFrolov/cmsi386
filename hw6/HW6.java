@@ -1,3 +1,5 @@
+// Name: Victor Frolov
+
 import java.util.concurrent.*;
     
 class NoMoreRoomException extends Exception {}
@@ -259,10 +261,16 @@ class Sieve implements Runnable {
 
 // $ java -ea TestSieve
 class TestSieve {
+
     public static void main(String[] args) {
-    TestSieve tester = new TestSieve();
-    tester.test(20);
-    tester.test(5);
+        TestSieve tester = new TestSieve();
+        tester.test(20);
+        tester.test(5);
+        tester.test2(20);
+        tester.test2(5);
+        tester.test3(20);
+        tester.test3(5);
+        tester.test3(2);
 
     }
 
@@ -286,30 +294,85 @@ class TestSieve {
         assert(Helpers.take(output) == 11);
         assert(Helpers.take(output) == 13);
         assert(Helpers.take(output) == -1);
-
         Helpers.join(t);
-
-
         assert(input.isEmpty());
         assert(output.isEmpty());
 
     }
+
+    void test2(Integer filterSize) {
+        BlockingQueue<Integer> input = new ArrayBlockingQueue<Integer>(10);
+        BlockingQueue<Integer> output = new ArrayBlockingQueue<Integer>(10);
+
+        Sieve sieve = new Sieve(input, output, filterSize, 10);
+        Thread t = new Thread(sieve);
+        t.start();
+
+        for(int i = 2; i < 25; i++) {
+            Helpers.put(input, i);
+        }
+
+        Helpers.put(input, -1);
+        assert(Helpers.take(output) == 2);
+        assert(Helpers.take(output) == 3);
+        assert(Helpers.take(output) == 5);
+        assert(Helpers.take(output) == 7);
+        assert(Helpers.take(output) == 11);
+        assert(Helpers.take(output) == 13);
+        assert(Helpers.take(output) == 17);
+        assert(Helpers.take(output) == 19);
+        assert(Helpers.take(output) == 23);
+        assert(Helpers.take(output) == -1);
+        Helpers.join(t);
+        assert(input.isEmpty());
+        assert(output.isEmpty());
+
+    }
+    void test3
+    (Integer filterSize) {
+        BlockingQueue<Integer> input = new ArrayBlockingQueue<Integer>(10);
+        BlockingQueue<Integer> output = new ArrayBlockingQueue<Integer>(10);
+
+        Sieve sieve = new Sieve(input, output, filterSize, 10);
+        Thread t = new Thread(sieve);
+        t.start();
+
+        for(int i = 2; i < 5; i++) {
+            Helpers.put(input, i);
+        }
+
+        Helpers.put(input, -1);
+        assert(Helpers.take(output) == 2);
+        assert(Helpers.take(output) == 3);
+        assert(Helpers.take(output) == -1);
+        Helpers.join(t);
+        assert(input.isEmpty());
+        assert(output.isEmpty());
+
+    }    
 }
 
 class HW6 {
     public static void main(String[] args) {
-    Integer max = Integer.parseInt(args[0]);
-    Integer filterSize = Integer.parseInt(args[1]);
-    Integer queueSize = Integer.parseInt(args[2]);
+        Integer max = Integer.parseInt(args[0]);
+        Integer filterSize = Integer.parseInt(args[1]);
+        Integer queueSize = Integer.parseInt(args[2]);
 
-    long tStart = System.currentTimeMillis();
-    
-    // TODO: Construct and start a pipeline containing the
-    // generator, a single sieve, and a printer.
-    long tEnd = System.currentTimeMillis();
+        long tStart = System.currentTimeMillis();
+        BlockingQueue<Integer> input = new ArrayBlockingQueue<Integer>(queueSize);
+        BlockingQueue<Integer> output = new ArrayBlockingQueue<Integer>(queueSize);
 
-    long tDiff = tEnd - tStart;
-    System.out.format("Run time: %d minutes, %.2f seconds%n", tDiff/60000, (tDiff % 60000) / 1000.0);
+        Sieve sieve = new Sieve(input, output, filterSize, queueSize);
+        Thread t = new Thread(sieve);
+        t.start();
+
+
+        // TODO: Construct and start a pipeline containing the
+        // generator, a single sieve, and a printer.
+        long tEnd = System.currentTimeMillis();
+
+        long tDiff = tEnd - tStart;
+        System.out.format("Run time: %d minutes, %.2f seconds%n", tDiff/60000, (tDiff % 60000) / 1000.0);
     }
 }
 
