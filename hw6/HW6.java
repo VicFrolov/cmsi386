@@ -220,32 +220,55 @@ class DivideFilter {
 // $ java -ea TestDivideFilter
 class TestDivideFilter {
     public static void main(String[] args) {
-	TestDivideFilter tester = new TestDivideFilter();
-	tester.test1();
-	// tester.test2();  // So you can add more tests...
-	// tester.test3();
+		TestDivideFilter tester = new TestDivideFilter();
+		tester.test1();
+		tester.test2();
     }
 
     void test1() {
-	DivideFilter filter = new DivideFilter(1);
-	assert(filter.anyEvenlyDivides(125) == false);
+		DivideFilter filter = new DivideFilter(1);
+		assert(filter.anyEvenlyDivides(125) == false);
 
-	try {
-	    filter.addDivisor(5);
-	    assert(filter.anyEvenlyDivides(125) == true);
-	} catch(NoMoreRoomException e) {
-	    assert(false); // should not reach this point!
-	}
+		try {
+		    filter.addDivisor(5);
+		    assert(filter.anyEvenlyDivides(125) == true);
+		} catch(NoMoreRoomException e) {
+		    assert(false); // should not reach this point!
+		}
 
-	assert(filter.full());
+		assert(filter.full());
 
-	try {
-	    filter.addDivisor(7);
-	    assert(false); // should not reach this point!
-	} catch (NoMoreRoomException e) {
-	    // cool. was full, so addDivisor threw NoMoreRoomException.
-	}
+		try {
+		    filter.addDivisor(7);
+		    assert(false); // should not reach this point!
+		} catch (NoMoreRoomException e) {
+		    // cool. was full, so addDivisor threw NoMoreRoomException.
+		}
     }
+
+    void test2() {
+    	DivideFilter filter2 = new DivideFilter(2);
+    	assert(filter2.anyEvenlyDivides(0) == false);
+
+    	try {
+    		filter2.addDivisor(2);
+    		filter2.addDivisor(3);
+    		assert(filter2.anyEvenlyDivides(12));
+    	} catch(NoMoreRoomException e) {
+    		assert(false);
+    	}
+
+    	assert(filter2.full());
+
+    	try {
+    		filter2.addDivisor(100);
+    		assert(false);
+    	} catch(NoMoreRoomException e) {
+
+    	}
+
+    }
+
 }
 
 class Helpers {
@@ -258,37 +281,37 @@ class Helpers {
     // complication for us.
     
     public static <E> void put(BlockingQueue<E> queue, E elem) {
-	while(true) {
-	    try {
-		queue.put(elem);
-		return;
-	    } catch(InterruptedException e) {
-		// Ignoring this. Just retry until it works.
-	    }
-	}
+		while(true) {
+		    try {
+				queue.put(elem);
+				return;
+		    } catch(InterruptedException e) {
+			// Ignoring this. Just retry until it works.
+		    }
+		}
     }
     
     public static <E> E take(BlockingQueue<E> queue) {
-	while(true) {
-	    try {
-		return queue.take();
-	    } catch(InterruptedException e) {
-		// Ignoring this. Just retry until it works.
-	    }
-	}
+		while(true) {
+		    try {
+				return queue.take();
+		    } catch(InterruptedException e) {
+			// Ignoring this. Just retry until it works.
+		    }
+		}
     }
 
     // You shouldn't need to use this directly, but some of the tests
     // I've provided do.
     public static void join(Thread t) {
-	while(true) {
-	    try {
-		t.join();
-		return;
-	    } catch(InterruptedException e) {
-		// Ignoring this. Just retry until it works.
-	    }
-	}
+		while(true) {
+		    try {
+				t.join();
+				return;
+		    } catch(InterruptedException e) {
+			// Ignoring this. Just retry until it works.
+		    }
+		}
     }
 }
 
