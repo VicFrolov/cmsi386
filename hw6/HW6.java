@@ -361,16 +361,24 @@ class HW6 {
         long tStart = System.currentTimeMillis();
         BlockingQueue<Integer> input = new ArrayBlockingQueue<Integer>(queueSize);
         BlockingQueue<Integer> output = new ArrayBlockingQueue<Integer>(queueSize);
+        
+        Generator gen = new Generator(max, input);
+        Thread genThread = new Thread(gen);
+        genThread.start();
 
         Sieve sieve = new Sieve(input, output, filterSize, queueSize);
-        Thread t = new Thread(sieve);
-        t.start();
+        Thread sieveThread = new Thread(sieve);
+        sieveThread.start();
 
+        Printer print = new Printer(output);
+        Thread printThread = new Thread(print);
+        printThread.start();
+        
+        Helpers.join(genThread);
+        Helpers.join(sieveThread);
+        Helpers.join(printThread);
 
-        // TODO: Construct and start a pipeline containing the
-        // generator, a single sieve, and a printer.
         long tEnd = System.currentTimeMillis();
-
         long tDiff = tEnd - tStart;
         System.out.format("Run time: %d minutes, %.2f seconds%n", tDiff/60000, (tDiff % 60000) / 1000.0);
     }
