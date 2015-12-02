@@ -4,9 +4,32 @@ import java.util.concurrent.*;
     
 class NoMoreRoomException extends Exception {}
 
+class FastDivideFilter extends DivideFilter {
+    FastDivideFilter(int capacity) {
+        super(capacity);
+    }
+
+    boolean anyEvenlyDivides(Integer i) {
+        double inputNb = Math.sqrt(i);
+        try {
+            for (Integer value : this.storedDivisors) {
+                if (value > inputNb) {
+                    return false;
+                }
+                if (i % value == 0) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+}
+
 class DivideFilter {
-    private int totalDivisors;
-    private Integer[] storedDivisors;
+    protected int totalDivisors;
+    protected Integer[] storedDivisors;
 
     
     DivideFilter(int capacity) {
@@ -201,8 +224,8 @@ class TestPrinter {
 
 
 class Sieve implements Runnable {
-    private DivideFilter filter;
-    private BlockingQueue<Integer> input, output;
+    private FastDivideFilter filter;
+    public BlockingQueue<Integer> input, output;
     private Integer filterSize, queueSize;
 
     Sieve(BlockingQueue<Integer> input,
@@ -214,7 +237,7 @@ class Sieve implements Runnable {
         this.output = output;
         this.filterSize = filterSize;
         this.queueSize = queueSize;
-        this.filter = new DivideFilter(filterSize);
+        this.filter = new FastDivideFilter(filterSize);
     }
 
     public void run() {
@@ -372,32 +395,54 @@ class HW6 {
     }
 }
 
-/* Part 4: Experiments
- *
- * For this part, make sure to run on a multi-core machine. 
- *
+
+
+/*
  * 1) How many CPUs cores does your machine have?
- * 
+My machine has 8 cores
+
  * 2) What is the run time for each of:
  *      java HW6 10000 1 1
+ Runtime: 5.81 seconds
+
  *      java HW6 10000 1 10
+ Runtime: 0.89 seconds
+
  *      java HW6 10000 10 1
+ Runtime: 0.34
+
  *      java HW6 10000 10 10
+ Runtime: 0.18
+
  *    What conclusions can you make from these times?
- * 
+ 
+ Queue size has an incredible effect on the speed, making it process 17 times faster by increasing the queue size tenfold. Filtersize also matters of course, and also greatly 
+ increases speed, but queue is still of more importance. Increasing both makes the process of finding primes up to 10,0000 go from 5.81 seconds to 0.18 seconds,
+ incredibly more efficient.
+
  * 3) Use a system monitor (e.g. Task Manager on Windows, Activity 
  *    Monitor on Mac, top on linux or Mac) to observe your CPU
  *    utilization for each of:
  *      java HW6 100000 10 10
  *      java HW6 100000 10000 10
  *    What conclusions can you make from these observations?
- *
+
+With a blockingqueue of size 10,000, the CPU load is far less than with blockingqueues of size 10. There were giant spikes in activity, presumably because many queues had to be created.
+The system load peaked greatly with size 10, whereas the peak for 10,000, although much smaller than with size 10, was mostly user based.
+
  * 4) Try a few different values of <filterSize> and <queueSize>
  *    and see which produce the lowest run time for: 
  *      java HW6 10000000 <filterSize> <queueSize>
  *    List the run times for each pair of values you tried.
- */
+ 
+java HW6 10000000 10000000 10000000 took 19 minutes, 14.00 seconds. CPU load was relatively low.
+java HW6 10000000 10000 10000 took  2 minutes, 58.40 seconds, CPU load was insanely high, computer was lagging, CPU usage was at 90%.
+java HW6 10000000 1000 1000 took 3 minutes, 7.96 seconds, CPU load was insanely high, at 96.39%.
+java HW6 10000000 100000 10000000 took 4 minutes, 30.64 seconds.
+java HW6 10000000 10000 10000000 took 3 minutes, 6.97 seconds
 
+
+*/
 /* Part 5: Extra Credit
  *
  * Define a FastDivideFilter class that extends DivideFilter and
@@ -407,4 +452,16 @@ class HW6 {
  * increasing order in the FastDivideFilter. List the run time of each
  * pair of <filterSize> and <queueSize> used in experiment #4 with
  * this optimization.
- */
+ 
+java HW6 10000000 10000000 10000000 took 0 minutes, 6.39 seconds
+java HW6 10000000 10000 10000 strangely took longer (especially when in the previous question it was way faster) at  0 minutes, 8.21 seconds
+java HW6 10000000 1000 1000 took 0 minutes, 27.40 seconds
+java HW6 10000000 100000 10000000 took 0 minutes, 7.39 seconds
+java HW6 10000000 10000 10000000 0 minutes, 18.32 seconds
+
+*/
+
+
+
+
+
