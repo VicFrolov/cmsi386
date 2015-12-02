@@ -5,22 +5,17 @@ import java.util.concurrent.*;
 class NoMoreRoomException extends Exception {}
 
 class DivideFilter {
-    int capacity;
-    int totalDivisors;
-    Integer[] storedDivisors;
+    private int totalDivisors;
+    private Integer[] storedDivisors;
 
     
     DivideFilter(int capacity) {
-        this.capacity = capacity;
         this.storedDivisors = new Integer[capacity];
         this.totalDivisors = 0;
     }
 
     boolean anyEvenlyDivides(Integer i) {
         try {
-            if (this.totalDivisors == 0) {
-                return false;
-            }
             for (Integer value : this.storedDivisors) {
                 if (i % value == 0) {
                     return true;
@@ -42,7 +37,7 @@ class DivideFilter {
     }
 
     boolean full() {
-        return (this.capacity == this.totalDivisors) ? true : false;
+        return (this.storedDivisors.length == this.totalDivisors) ? true : false;
     }
 }
 
@@ -72,6 +67,7 @@ class TestDivideFilter {
         } catch (NoMoreRoomException e) {
 
         }
+
     }
 
     void test2() {
@@ -134,8 +130,8 @@ class Helpers {
 }
 
 class Generator implements Runnable {
-    Integer max;
-    BlockingQueue<Integer> output;
+    private Integer max;
+    private BlockingQueue<Integer> output;
 
     Generator(Integer max, BlockingQueue<Integer> output) {
         this.max = max;
@@ -144,18 +140,9 @@ class Generator implements Runnable {
 
     public void run() {
         for (int i = 2; i < this.max; i++) {
-            try {
-                this.output.put(i);
-            } catch(InterruptedException e) {
-        
-            }            
+            Helpers.put(output, i);          
         }
-
-        try {
-            this.output.put(-1);            
-        } catch (InterruptedException e) {
-
-        }
+        Helpers.put(output, -1);
         return;
     }
 }
@@ -182,18 +169,19 @@ class TestGenerator {
 }
 
 class Printer implements Runnable {
-    BlockingQueue<Integer> input;
+    private BlockingQueue<Integer> input;
 
     Printer(BlockingQueue<Integer> input) {
         this.input = input;
     }
 
     public void run() {
-        for (Integer i : input) {
-            if (i == -1) {
+        while(true) {
+            int currentValue = Helpers.take(input);
+            if (currentValue == -1) {
                 return;
             } else {
-                System.out.println(Helpers.take(input));
+                System.out.println(currentValue);
             }
         }
     }
@@ -213,9 +201,9 @@ class TestPrinter {
 
 
 class Sieve implements Runnable {
-    DivideFilter filter;
-    BlockingQueue<Integer> input, output;
-    Integer filterSize, queueSize;
+    private DivideFilter filter;
+    private BlockingQueue<Integer> input, output;
+    private Integer filterSize, queueSize;
 
     Sieve(BlockingQueue<Integer> input,
       BlockingQueue<Integer> output,
@@ -231,29 +219,29 @@ class Sieve implements Runnable {
 
     public void run() {
         int timeToStop = -1;
+
         while(true) {
-            for (Integer i : input) {
-                int currentNumber = Helpers.take(input);
-                if (i == timeToStop) {
-                    Helpers.put(output, currentNumber);
-                    return;
-                } else if (!filter.anyEvenlyDivides(i)) {
-                    Helpers.put(output, currentNumber);
-                    if (!filter.full()) {
-                        try {
-                            filter.addDivisor(new Integer(i));
-                        } catch(NoMoreRoomException e) {
-                            e.getMessage();
-                        }
-                    } else {
-                        BlockingQueue<Integer> newOutput = new ArrayBlockingQueue<Integer>(queueSize);
-                        Sieve newSieve = new Sieve(output,newOutput,filterSize, queueSize);
-                        Thread t = new Thread(newSieve);
-                        t.start();
-                        t.stop();
+            int currentNumber = Helpers.take(input);
+            if (currentNumber == timeToStop) {
+                Helpers.put(output, currentNumber);
+                return;
+            } else if (!filter.anyEvenlyDivides(currentNumber)) {
+                Helpers.put(output, currentNumber);
+                if (!filter.full()) {
+                    try {
+                        filter.addDivisor(new Integer(currentNumber));
+                    } catch(NoMoreRoomException e) {
 
                     }
-                }
+                    if(filter.full()) {
+                        BlockingQueue<Integer> newOutput = new ArrayBlockingQueue<Integer>(queueSize);
+                        ArrayBlockingQueue<Integer> reconfiguredOutput = new ArrayBlockingQueue<Integer>(queueSize);
+                        newOutput = this.output;
+                        this.output = reconfiguredOutput;
+                        Sieve s = new Sieve(reconfiguredOutput,newOutput,filterSize, queueSize);
+                        new Thread(s).start();
+                    }
+                } 
             }
         }
     }
@@ -305,8 +293,8 @@ class TestSieve {
         BlockingQueue<Integer> output = new ArrayBlockingQueue<Integer>(10);
 
         Sieve sieve = new Sieve(input, output, filterSize, 10);
-        Thread t = new Thread(sieve);
-        t.start();
+        Thread t2 = new Thread(sieve);
+        t2.start();
 
         for(int i = 2; i < 25; i++) {
             Helpers.put(input, i);
@@ -323,7 +311,7 @@ class TestSieve {
         assert(Helpers.take(output) == 19);
         assert(Helpers.take(output) == 23);
         assert(Helpers.take(output) == -1);
-        Helpers.join(t);
+        Helpers.join(t2);
         assert(input.isEmpty());
         assert(output.isEmpty());
 
