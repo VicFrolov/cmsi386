@@ -213,12 +213,11 @@ class Printer implements Runnable {
 class TestPrinter {
     public static void main(String[] args){
         BlockingQueue<Integer> queue = new ArrayBlockingQueue<Integer>(11);
-        Printer printer = new Printer(queue);
         Generator gen = new Generator(11, queue);
-        gen.run();
+        Printer printer = new Printer(queue);
+        Thread t = new Thread(gen);
+        t.start();
         printer.run();
-        assert(Helpers.take(queue) == -1);
-        assert(queue.isEmpty());
     }
 }
 
@@ -415,7 +414,7 @@ My machine has 8 cores
  Runtime: 0.18
 
  *    What conclusions can you make from these times?
- 
+
  Queue size has an incredible effect on the speed, making it process 17 times faster by increasing the queue size tenfold. Filtersize also matters of course, and also greatly 
  increases speed, but queue is still of more importance. Increasing both makes the process of finding primes up to 10,0000 go from 5.81 seconds to 0.18 seconds,
  incredibly more efficient.
