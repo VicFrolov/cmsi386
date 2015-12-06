@@ -18,7 +18,8 @@ Define a predicate sorted(L) that is true if L a list of numbers in increasing o
 
 
 sorted([]).
-sorted(L) :- L = [X , Y | Xs], X =< Y, sorted(Xs).
+sorted([_]) :- sorted([]).
+sorted([X , Y |  Xs]) :- X =< Y, sorted([Y | Xs]).
 
 
 /* Problem 3
@@ -65,7 +66,6 @@ is true if L2 is a sorted permutation of L1.
 perm(L1, L2) :- L2 = L1 = [X | Xs].*/
 
 /*Problem 4 */
-
 
 
 insert([], [], []).
