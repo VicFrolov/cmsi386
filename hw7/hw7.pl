@@ -30,16 +30,12 @@ sorted([X , Y |  Xs]) :- X =< Y, sorted([Y | Xs]).
 Implement permsort using perm and sorted.
 
 */
-
-
-perm([], []).
-perm([X], [X]).
 perm(L1, [X | Xs]) :- select(X, L1, Ls), perm(Ls, Xs).
+perm([], []).
 
-permsort([], []).
-permsort([X], [X]).
+
 permsort(L1, L2) :- perm(L1, L2), sorted(L2).
-
+permsort([], []).
 
 /* Problem 4 
 
@@ -63,6 +59,8 @@ insertV2( X, L1, L2 ) :- sorted( L1 ), select( X, L2 , L1 ), sorted( L2 ).
 
 helper([], Acc, Acc).
 helper([X | Xs], Acc, Sorted) :- insert(X, Acc, NewAcc), helper(Xs, NewAcc, Sorted).
+
+insort(L1, L1).
 insort( L1, L2 ) :- helper(L1, [], L2).
 
 %L2 is sorted, and a perm of L1.
@@ -78,9 +76,13 @@ Compare the time it takes prolog to find 1 solution for each of:
 
 vs 
 
-?- insort([5,3,6,2,7,4,5,4,1,2,8,6],L).
+?- insort([5,3,6,2,7,22,20,4,1,13,8,17],L).
 
 Which is faster? Why?
+
+insort is way faster. insort returned value almos tinstantly, I gave up waiting on permsort of your size. However, with one item less, it returned 
+an item after a few minutes. Makes sense because insort inserts value into an already sorted list, 
+where as permsort inserts an item one at a time and permutates all possibilities to check for an ordered list.
 
 */
 
