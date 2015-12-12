@@ -86,13 +86,16 @@ where as permsort inserts an item one at a time and permutates all possibilities
 
 */
 
-performWOrld(world([], [], [], none), [], world([], [], []) ).
 
-perform(Start, Action, Goal) :- Start = world(S1, S2, S3, H), Goal = world(SS1, SS2, SS3, H1), Action = V.
-blocksworld(Start, Actions, Goal) :- Start = world(S1, S2, S3, H), Actions = V, Goal = world(SS1, SS2, SS3, H1).
-world(S1, S2, S3, H).
-pickup(S).
-putdown(S).
+perform(world([S1H |S1T], S2, S3, none), pickup(stack1), world(S1T, S2, S3, S1H)).
+perform(world(S1, S2, S3, X), putdown(stack1), world([X|S1], S2, S3, none)).
+perform(world(S1, [S2H | S2T], S3, none), pickup(stack2), world(S1, S2T, S3, S2H)).
+perform(world(S1, S2, S3, X), putdown(stack2), world(S1, [X|S2], S3, none)).
+perform(world(S1,S2,[S3H|S3T], none), pickup(stack3), world(S1,S2,S3T,S3H)).
+perform(world(S1,S2,S3,X), putdown(stack3), world(S1,S2, [X|S3], none)).
+
+blocksworld(Start, [], Start).
+blocksworld(Start, [A|As], End) :- perform(Start, A, Mid), blocksworld(Mid, As, End).
 
 
 
